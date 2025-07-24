@@ -26,7 +26,7 @@ build/
 Thumbs.db
 
 # Generated files (optional - remove if you want to commit generated code)
-generated/
+# generated/
 
 # Logs
 logs/

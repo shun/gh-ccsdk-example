@@ -55,9 +55,9 @@ jobs:
     - name: Commit generated code
       if: github.event_name == 'workflow_dispatch'
       run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git add generated/
+        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config --global user.name "github-actions[bot]"
+        git add generated/ --force
         if [ -n "$(git status --porcelain)" ]; then
           git commit -m "AI生成コードを追加
 
