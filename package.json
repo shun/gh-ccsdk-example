@@ -6,8 +6,14 @@
   "scripts": {
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "generate": "node dist/generate.js",
-    "dev": "tsx src/generate.ts"
+    "generate": "node dist/generate-refactored.js",
+    "generate:legacy": "node dist/generate-unified.js",
+    "generate:direct": "node dist/generate.js",
+    "generate:official": "node dist/generate-official.js",
+    "dev": "tsx src/generate-refactored.ts",
+    "dev:legacy": "tsx src/generate-unified.ts",
+    "dev:direct": "tsx src/generate.ts",
+    "dev:official": "tsx src/generate-official.ts"
   },
   "keywords": [
     "claude",
@@ -19,6 +25,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@anthropic-ai/claude-code": "^1.0.0",
     "@anthropic-ai/sdk": "^0.27.0",
     "@aws-sdk/client-bedrock-runtime": "^3.0.0"
   },
