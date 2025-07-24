@@ -1,0 +1,81 @@
+name: AI Code Generation with Claude
+
+on:
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: 'コード生成用のプロンプト'
+        required: true
+        default: 'TypeScriptでHello Worldを出力する関数を作成してください'
+      output_file:
+        description: '出力ファイル名'
+        required: false
+        default: 'generated/hello.ts'
+  push:
+    branches: [ main ]
+    paths:
+      - 'prompts/**'
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  generate-code:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build TypeScript
+      run: npm run build
+      
+    - name: Generate code with Claude
+      env:
+        # Anthropic Direct API (デフォルト)
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        # AWS Bedrock設定
+        CLAUDE_CODE_USE_BEDROCK: ${{ secrets.CLAUDE_CODE_USE_BEDROCK }}
+        AWS_REGION: ${{ secrets.AWS_REGION }}
+        ANTHROPIC_MODEL: ${{ secrets.ANTHROPIC_MODEL }}
+        AWS_BEARER_TOKEN_BEDROCK: ${{ secrets.AWS_BEARER_TOKEN_BEDROCK }}
+        # 共通設定
+        INPUT_PROMPT: ${{ github.event.inputs.prompt }}
+        OUTPUT_FILE: ${{ github.event.inputs.output_file || 'generated/auto-generated.ts' }}
+      run: npm run generate
+      
+    - name: Commit generated code
+      if: github.event_name == 'workflow_dispatch'
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add generated/
+        if [ -n "$(git status --porcelain)" ]; then
+          git commit -m "AI生成コードを追加
+
+          - Claude SDKを使用してコード生成
+          - プロンプト: ${{ github.event.inputs.prompt }}
+          - 出力ファイル: ${{ github.event.inputs.output_file }}
+          
+          🤖 Generated with Claude Code SDK
+          
+          Co-Authored-By: Claude <noreply@anthropic.com>"
+          git push
+        else
+          echo "変更なし - コミットをスキップ"
+        fi
+        
+    - name: Upload generated files as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: generated-code
+        path: generated/
+        retention-days: 30
